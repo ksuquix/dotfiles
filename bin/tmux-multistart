@@ -1,0 +1,36 @@
+#!/bin/sh
+
+if [ -z "$*" ]; then
+    read -a servers
+else
+    servers=("$@")
+fi
+
+if [ "${servers[0]}" == "chef" ]; then
+  cd ~/src/${servers[0]}-${servers[1]}
+  servers="*${servers[0]}-${servers[1]}:${servers[2]} `knife search -i ${servers[@]:2}  | tail +3`"
+fi
+
+fullservers=""
+name="`echo $servers | sed -e 's/[. ].*//'`"
+
+
+for serv in $servers; do
+    if [ -f "$HOME/dotfiles/machines/$serv" ]; then
+      fullservers="$fullservers `cat $HOME/dotfiles/machines/$serv`"
+    else
+	if [ "${serv:0:1}" == "*" ]; then
+	    name=${serv:1}
+	else
+	    fullservers="$fullservers $serv"
+	fi
+    fi
+done
+
+tmux new-window -n "$name"
+for serv in $fullservers; do 
+    tmux split-window "ssh $serv"
+    tmux select-layout even-vertical >/dev/null 2>&1
+done
+tmux kill-pane -t 0
+tmux select-layout even-vertical >/dev/null 2>&1
