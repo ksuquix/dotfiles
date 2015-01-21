@@ -1,5 +1,11 @@
 #!/bin/sh
 
+# for use in tmux
+# assumes chef repositories set up for chef servers in:
+#  ~/src/chef-"chefreponame"
+# bind-key C command-prompt -p "machine(s)/group: " "run-shell 'tmux-multistart %1'"
+
+
 if [ -z "$*" ]; then
     read -a servers
 else
