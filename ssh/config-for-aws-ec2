@@ -1,0 +1,6 @@
+Host ec2*compute-1.amazonaws.com
+  StrictHostKeyChecking no
+#  User fabric
+#  IdentityFile  /Users/eisele/.ssh/id_fabric
+  User ubuntu
+  IdentityFile  /Users/eisele/.ssh/aws-asakey.pem
