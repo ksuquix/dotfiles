@@ -272,46 +272,6 @@ if [ ! -z "$PS1" ];then
       fi
   fi
   
-  #I think these are fixes for a problem that doesn't happen anymore
-  # if [ "$TERM" = "xterm" ] && [ "$myos" = "Linux" ]; then
-  #    export TERM=vt100
-  # fi
-  # if [ "$TERM" = "linux" ]; then
-  #     export TERM=vt100
-  # fi
-  # if [ "$TERM" = "vt320" ]; then
-  #     export TERM=xterm
-  # fi
-  # if [ "$TERM" = "screen" ]; then
-  #     stty erase '^?'
-  # fi
-  # if [ "$TERM" = "screen" ] && [ "$myos" = "SunOS" ]; then
-  #     TERM=xterm
-  # fi
-
-# move these to machine local... also old old old
-  # export CVS_RSH=ssh
-  # if [ -z "$CVSROOT" ]; then
-  #     if [ "$HOST" = "tora.toysmakeuspowerful.com" ] || [ "$HOST" = "tora" ]; then
-	#   export CVSROOT=/home/quixote/cvsroot
-  #     else
-	#   if [ "$HOST" = "amber.greyhelm.com" ]; then
-	#       export CVSROOT=/home/digi/cvsroot
-	#   else
-	#       if [ "$HOST" = "invidious" ]; then
-	# 	  export CVSROOT=/usr/local/keas/cvsroot
-	#       else
-	# 	  export CVSROOT=:ext:quixote@gw.tmup.net:/home/quixote/cvsroot
-	#       fi
-	#   fi
-  #     fi
-  # fi
-  # alias invcvs="export CVSROOT=:ext:eisele@insanity.ksu.ksu.edu:/net/invidious/usr/local/keas/cvsroot"
-  # alias cnscvs="export CVSROOT=:ext:eisele@unix.ksu.edu:/remotefs/src/cvs/cvs"
-  # alias quixcvs="export CVSROOT=:ext:quixote@gw.toysmakeuspowerful.com:/home/quixote/cvsroot"
-  # alias digicvs="export CVSROOT=:ext:digi@amber.greyhelm.com:/home/digi/cvsroot"
-  # alias omecvs="export CVSROOT=:ext:eisele@cvs.ome.ksu.edu:/as/data/cvsroot"
-  # alias nls="/bin/ls"
   alias emacs='emacs -title "emacs:$USER@$HOST" "$@"'
   if [ -e "/Applications/Emacs.app" ]; then
       alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs -title "emacs:$USER@$HOST" "$@"'
