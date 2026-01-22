@@ -5,12 +5,47 @@ if [ "$UID" = "0" ]; then
   PATH=/root/bin:$PATH
 fi
 
-#I don't really do this anymore, I guess
-#export MANPATH=${MANPATH}:${HOME}/man
+# If not running interactively, don't do anything
+case $- in
+    *i*) ;;
+      *) return;;
+esac
+
+# ignoreboth and ignorespace cause issues trying to document indented for loop pasting, etc.
+export HISTCONTROL=ignoredups
+export HISTSIZE=5000
+export HISTFILESIZE=20000
 
 export EDITOR=vi
 export PAGER=less
 export LESS="-M -n -q -i -r"
+
+export IGNOREEOF=2
+export TMOUT=0
+unset noclobber
+shopt > /dev/null 2>&1
+if [ $? = 0 ]; then
+  shopt -s cdable_vars
+  shopt -s checkwinsize
+#    shopt -s cdspell
+else
+  export cdable_vars=1
+fi
+stty -ixon
+
+# make less more friendly for non-text input files, see lesspipe(1)
+[ -x /usr/bin/lesspipe ] && eval "$(SHELL=/bin/sh lesspipe)"
+
+export src=/usr/local/src
+export data=/usr/local/data
+unset MAILCHECK
+ulimit -c 0
+
+if [ ! -z "$SSH_CLIENT" ]; then
+  export REMOTEHOST=${SSH_CLIENT%% *}
+fi
+
+umask 002
 
 # Reset
 Color_Off='\[\e[0m\]'       # Text Reset
@@ -28,12 +63,6 @@ IBlack='\[\e[0;90m\]';IRed='\[\e[0;91m\]';IGreen='\[\e[0;92m\]';IYellow='\[\e[0;
 BIBlack='\[\e[1;90m\]';BIRed='\[\e[1;91m\]';BIGreen='\[\e[1;92m\]';BIYellow='\[\e[1;93m\]';BIBlue='\[\e[1;94m\]';BIPurple='\[\e[1;95m\]';BICyan='\[\e[1;96m\]';BIWhite='\[\e[1;97m\]'
 # High Intensity backgrounds
 On_IBlack='\[\e[0;100m\]';On_IRed='\[\e[0;101m\]';On_IGreen='\[\e[0;102m\]';On_IYellow='\[\e[0;103m\]';On_IBlue='\[\e[0;104m\]';On_IPurple='\[\e[0;105m\]';On_ICyan='\[\e[0;106m\]';On_IWhite='\[\e[0;107m\]'
-
-if [ ! -z "$SSH_CLIENT" ]; then
-  export REMOTEHOST=${SSH_CLIENT%% *}
-fi
-
-umask 002
 
 # General shell tools
 
@@ -54,151 +83,132 @@ function session-test {
     tmux neww -k -t test:1
 }
 
-# end tools
+function nullroute-iptables() {
+    iptables -I INPUT -s "$*" -j DROP
+}
 
-# Things set for interactive shells
-if [ ! -z "$PS1" ];then
+function wordfind() {
+    egrep "$*" /usr/share/dict/words
+}
 
-  function wordfind() {
-      egrep "$*" /usr/share/dict/words
-  }
-  function xtitle() {
-    echo -en \\\033]0\;"$*" \\\007
+# Title/prompt stuff
+
+function xtitle() {
+  echo -en \\\033]0\;"$*" \\\007
 #    * ESC]0;stringBEL -- Set icon name and window title to string
 #    * ESC]1;stringBEL -- Set icon name to string
 #    * ESC]2;stringBEL -- Set window title to string
-  }
-  function chtitle() {
-    PROMPT_COMMAND="xtitle $*"
-  }
-  function nullroute-iptables() {
-     iptables -I INPUT -s "$*" -j DROP
-  }
+}
+function chtitle() {
+  PROMPT_COMMAND="xtitle $*"
+}
 
-  # Show Git branch/tag, or name-rev if on detached head
-  function parse_git_branch() {
-	  (git rev-parse --abbrev-ref HEAD) 2>/dev/null
+# Show Git branch/tag, or name-rev if on detached head
+function parse_git_branch() {
+  (git rev-parse --abbrev-ref HEAD) 2>/dev/null
 #      (git name-rev --name-only --no-undefined --always HEAD || git symbolic-ref -q HEAD) 2> /dev/null
-  }
-  
-  # Show different symbols as appropriate for various Git repository states
-  function parse_git_state() {
-      
-      # Compose this value via multiple conditional appends.
-      local GIT_STATE=""
-      
-      local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
-      if [ "$NUM_AHEAD" -gt 0 ]; then
-	  GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
-      fi
+}
 
-      local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
-      if [ "$NUM_BEHIND" -gt 0 ]; then
-	  GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
-      fi
+# Show different symbols as appropriate for various Git repository states
+function parse_git_state() {
+    
+    # Compose this value via multiple conditional appends.
+    local GIT_STATE=""
+    
+    local NUM_AHEAD="$(git log --oneline @{u}.. 2> /dev/null | wc -l | tr -d ' ')"
+    if [ "$NUM_AHEAD" -gt 0 ]; then
+  GIT_STATE=$GIT_STATE${GIT_PROMPT_AHEAD//NUM/$NUM_AHEAD}
+    fi
 
-      local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
-      if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
-	  GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
-      fi
+    local NUM_BEHIND="$(git log --oneline ..@{u} 2> /dev/null | wc -l | tr -d ' ')"
+    if [ "$NUM_BEHIND" -gt 0 ]; then
+  GIT_STATE=$GIT_STATE${GIT_PROMPT_BEHIND//NUM/$NUM_BEHIND}
+    fi
 
-      if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
-	  GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
-      fi
+    local GIT_DIR="$(git rev-parse --git-dir 2> /dev/null)"
+    if [ -n $GIT_DIR ] && test -r $GIT_DIR/MERGE_HEAD; then
+  GIT_STATE=$GIT_STATE$GIT_PROMPT_MERGING
+    fi
 
+    if [[ -n $(git ls-files --other --exclude-standard 2> /dev/null) ]]; then
+  GIT_STATE=$GIT_STATE$GIT_PROMPT_UNTRACKED
+    fi
+
+# this was being slow.   maybe it was an NFS thing though?
 #      if ! git diff --quiet 2> /dev/null; then
 #	  GIT_STATE=$GIT_STATE$GIT_PROMPT_MODIFIED
 #      fi
-      
-      if ! git diff --cached --quiet 2> /dev/null; then
-	  GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
-      fi
+    
+    if ! git diff --cached --quiet 2> /dev/null; then
+  GIT_STATE=$GIT_STATE$GIT_PROMPT_STAGED
+    fi
 
-      if [[ -n $GIT_STATE ]]; then
-	  echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
-      fi
+    if [[ -n $GIT_STATE ]]; then
+  echo "$GIT_PROMPT_PREFIX$GIT_STATE$GIT_PROMPT_SUFFIX"
+    fi
 
-  }
+}
 
-  # If inside a Git repository, print its branch and state
-  function git_prompt_string() {
-      local git_where="$(parse_git_branch)"
-      [ -n "$git_where" ] && echo "git/${git_where#(refs/heads/|tags/)}$(parse_git_state) "
-  }
+# If inside a Git repository, print its branch and state
+function git_prompt_string() {
+    local git_where="$(parse_git_branch)"
+    [ -n "$git_where" ] && echo "git/${git_where#(refs/heads/|tags/)}$(parse_git_state) "
+}
 
-  GPRO=$(git_prompt_string)
+GPRO=$(git_prompt_string)
 #  PROMPT_COMMAND="echo -n \": \$(date +%m%d:%H:%m) \$(git_prompt_string)\""
 
-  if [ "$TERM" != "dumb" ]; then
-      shopt -s checkwinsize
-      export PS1=": ${Cyan}\$(date '+%m/%d/%y %H:%M:%S')${Color_Off} ${BASEUSER}@\h ${Yellow}\w${Color_Off} ${IGreen}\$(git rev-parse --abbrev-ref HEAD 2>/dev/null)${Color_Off}\\\$; "
-      export LOCALE=en_US.iso88591
-  fi
-
-  if [ "$TERM" = "xterm" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "xterm-256color" ];then 
-      if [ -z "$STY" ]; then
-	  PROMPT_COMMAND="xtitle ${USER}@${HOSTNAME} \${PWD} \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
-	  #    else 
-	  #	PROMPT_COMMAND="xtitle screen ${BASEUSER}@${HOSTNAME}:\${PWD} $$\#\"\`history 1|tr -d \'[:cntrl:]\'\`\""
-      fi
-  fi
-  
-  alias emacs='emacs -title "emacs:$USER@$HOST" "$@"'
-  if [ -e "/Applications/Emacs.app" ]; then
-      alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs -title "emacs:$USER@$HOST" "$@"'
-  fi
-  function pptree() {
-   for pptreepid in `pgrep  $*` 
-    do 
-      echo $pptreepid: 
-      # note: linux has -h flag, but solaris doesn't (grep -v...)
-      pptreepidlist=`pgrep -P $pptreepid`
-      if [ "$pptreepidlist" != "" ]; then
-        ps -fp $pptreepidlist |sed -e "s/^/  /"|grep -v "UID.*CMD"
-      fi
-    done
-  }
-  
-  export HISTFILESIZE=5000
-  export IGNOREEOF=2
-  export TMOUT=0
-  unset noclobber
-  shopt > /dev/null 2>&1
-  if [ $? = 0 ]; then
-    shopt -s cdable_vars
+if [ "$TERM" != "dumb" ]; then
     shopt -s checkwinsize
-#    shopt -s cdspell
-  else
-    export cdable_vars=1
-  fi
-  stty -ixon
-  export HOSTFILE=$HOME/.hosts
-  export src=/usr/local/src
-  export data=/usr/local/data
-  unset MAILCHECK
-  ulimit -c 0
-  if [ -f "$HOME/bin/quixbash.local" ]; then
-     . $HOME/bin/quixbash.local
-  fi
-  if [ -f "$HOME/bin/quixbash.local-$HOST" ]; then
-     . $HOME/bin/quixbash.local-$HOST
-  fi
-  if [ -f "/etc/bash_completion.d/acroread.sh" ]; then
-    echo "WARNING:   /etc/bash_completion.d/acroread.sh installed.  remove it."
-  fi
-  for ai in {1..30}
-  do
-      alias a$ai="awk '{print \$$ai}'"
-  done
-  function headme() {
-    IFS= read -r header
-    printf '%s\n' "$header"
-    "$@"
-  }
-  function awsp() {
-    export AWS_PROFILE="$@"
-  }
+    export PS1=": ${Cyan}\$(date '+%m/%d/%y %H:%M:%S')${Color_Off} ${BASEUSER}@\h ${Yellow}\w${Color_Off} ${IGreen}\$(git rev-parse --abbrev-ref HEAD 2>/dev/null)${Color_Off}\\\$; "
+    export LOCALE=en_US.iso88591
 fi
+
+if [ "$TERM" = "xterm" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "xterm-256color" ];then 
+    if [ -z "$STY" ]; then
+  PROMPT_COMMAND="xtitle ${USER}@${HOSTNAME} \${PWD} \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
+  #    else 
+  #	PROMPT_COMMAND="xtitle screen ${BASEUSER}@${HOSTNAME}:\${PWD} $$\#\"\`history 1|tr -d \'[:cntrl:]\'\`\""
+    fi
+fi
+
+alias emacs='emacs -title "emacs:$USER@$HOST" "$@"'
+if [ -e "/Applications/Emacs.app" ]; then
+    alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs -title "emacs:$USER@$HOST" "$@"'
+fi
+function pptree() {
+  for pptreepid in `pgrep  $*` 
+  do 
+    echo $pptreepid: 
+    # note: linux has -h flag, but solaris doesn't (grep -v...)
+    pptreepidlist=`pgrep -P $pptreepid`
+    if [ "$pptreepidlist" != "" ]; then
+      ps -fp $pptreepidlist |sed -e "s/^/  /"|grep -v "UID.*CMD"
+    fi
+  done
+}
+
+if [ -f "$HOME/bin/quixbash.local" ]; then
+    . $HOME/bin/quixbash.local
+fi
+if [ -f "$HOME/bin/quixbash.local-$HOST" ]; then
+    . $HOME/bin/quixbash.local-$HOST
+fi
+if [ -f "/etc/bash_completion.d/acroread.sh" ]; then
+  echo "WARNING:   /etc/bash_completion.d/acroread.sh installed.  remove it."
+fi
+for ai in {1..30}
+do
+    alias a$ai="awk '{print \$$ai}'"
+done
+function headme() {
+  IFS= read -r header
+  printf '%s\n' "$header"
+  "$@"
+}
+function awsp() {
+  export AWS_PROFILE="$@"
+}
 
 # Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
 export PATH="$PATH:$HOME/.rvm/bin"
@@ -207,5 +217,29 @@ export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
-
 alias vi="/usr/bin/vi '+color pablo'"
+
+# enable color support of ls and also add handy aliases
+if [ -x /usr/bin/dircolors ]; then
+    test -r ~/.dircolors && eval "$(dircolors -b ~/.dircolors)" || eval "$(dircolors -b)"
+    alias ls='ls --color=auto'
+    #alias dir='dir --color=auto'
+    #alias vdir='vdir --color=auto'
+
+    alias grep='grep --color=auto'
+    alias fgrep='fgrep --color=auto'
+    alias egrep='egrep --color=auto'
+fi
+
+# enable programmable completion features (you don't need to enable
+# this, if it's already enabled in /etc/bash.bashrc and /etc/profile
+# sources /etc/bash.bashrc).
+if ! shopt -oq posix; then
+  if [ -f /usr/share/bash-completion/bash_completion ]; then
+    . /usr/share/bash-completion/bash_completion
+  elif [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+  fi
+fi
+
+export DOCKER_CERTS=/etc/ssl/certs
