@@ -6,84 +6,11 @@
 
 myos=`uname -s`
 
-case "$myos" in 
-    Linux)
-	OPENWINHOME="/usr/X11R6"
-	PATHPOSTPEND=""
-	;;
-    SunOS)
-	OPENWINHOME="/usr/openwin"
-	PATHPOSTPEND="/usr/ccs/bin:/usr/ucb"
-	# CNSEST: /opt/vxva/bin:/usr/sbin/osa:/opt/VRTSvmsa/bin:/opt/VRTS/bin:/usr/cluster/bin
-	;;
-    Darwin)
-	OPENWINHOME="/usr/X11"
-	PATHPOSTPEND=""
-	;;
-    *)
-	OPENWINHOME="/usr/X11"
-	PATHPOSTPEND=""
-esac
-
-if [ "${myos/_NT*/}" = "CYGWIN" ]; then
-  if [ "$DISPLAY" = ":0" ]; then
-    DISPLAY="127.0.0.1:0"
-  fi
-  OPENWINHOME=/usr/X11R6
-fi
-
-OLDPATH=$PATH
-if [ -f /usr/local/etc/ksu.bashrc ]; then
-# tim dinked with stuff and broke this
-  unset lpath
-  unset LPATH
-  . /usr/local/etc/ksu.bashrc
-else
-  lpath=/usr/local/bin:/usr/bin:/bin:${OPENWINHOME}/bin
-  if [ "$myos" = "SunOS" ] && [ -z "$MANPATH" ]; then
-      export MANPATH=/usr/local/man:/usr/local/share/man:/usr/man:/usr/share/man:${OPENWINHOME}/man:/usr/dt/man:/usr/sfw/share/man:/opt/SUNWspro/man
-  fi
-fi
-
-# jamest's bashrc.developer had broken versions
-PATH=$PATH:/usr/ucb
-
-for name in /as/conf/shell/bashrc.developer /as/conf/shell/bashrc.asa /usr/local/Library/Contributions/brew_bash_completion.sh /usr/local/etc/bash_completion.d/tmux
-  do
-  if [ -f $name ]
-    then
-      . $name
-#      lpath=$PATH
-  fi
-done
-
-if [ "$myos" == "Darwin" ]; then
-    unset LD_LIBRARY_PATH
-fi
-
 export PATH=${HOME}/bin:${HOME}/.local/bin:/usr/local/bin:/usr/local/sbin:$PATH:/usr/sbin:/sbin
 if [ "$UID" = "0" ]; then
   PATH=/root/bin:$PATH
 fi
 
-NEWPATH=""
-quoteold=(`echo $PATH:$OLDPATH:$PATHPOSTPEND | sed -e 's/ /%%/g' -e 's/:/ /g'`)
-for i in ${quoteold[@]} ; do 
-    if [ -z "$NEWPATH" ]; then
-	NEWPATH="$i"
-    else
-	if { echo ":$NEWPATH:" | sed -e 's/ /%%/g'| grep -c ":$i:" > /dev/null; } ; then
-	    echo foo > /dev/null
-	else
-	    NEWPATH=${NEWPATH}:"$i"
-	fi
-    fi
-done
-export PATH=$NEWPATH
-
-#export PERLMAN=`echo /usr/local/lib/perl5/*/man | sed -e 's/ /:/g'`
-export PERLDOC="-U"
-#export MANPATH=${MANPATH}:${HOME}/man:${PERLMAN}:/opt/VRTSvxvm/man
 export MANPATH=${MANPATH}:${HOME}/man
 
 export EDITOR=vi
@@ -163,16 +90,6 @@ On_IPurple='\[\e[0;105m\]'  # Purple
 On_ICyan='\[\e[0;106m\]'    # Cyan
 On_IWhite='\[\e[0;107m\]'   # White
 
-
-#export MORE  '-c'
-
-#if [ -z "$LD_RUN_PATH" ]; then
-#  export LD_RUN_PATH=/usr/local/lib:${OPENWINHOME}/lib:/usr/dt/lib
-#fi
-#if [ -z "$LD_LIBRARY_PATH" ]; then
-#  export LD_LIBRARY_PATH=/usr/local/lib:${OPENWINHOME}/lib:/usr/dt/lib:/lib:/usr/lib
-#fi
-
 if [ ! -z "$SSH_CLIENT" ]; then
   export REMOTEHOST=${SSH_CLIENT%% *}
 fi
@@ -198,9 +115,7 @@ function session-test {
     tmux neww -k -t test:1
 }
 
-
 # end tools
-
 
 # Things set for interactive shells
 if [ ! -z "$PS1" ];then
@@ -349,7 +264,7 @@ if [ ! -z "$PS1" ];then
       export LOCALE=en_US.iso88591
   fi
 
-  if [ "$TERM" = "xterm" ] || [ "$TERM" = "vt100" ];then 
+  if [ "$TERM" = "xterm" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "xterm-256color" ];then 
       if [ -z "$STY" ]; then
 	  PROMPT_COMMAND="xtitle ${BASESHORT}@${HOSTSHORT} \${PWD} \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
 	  #    else 
@@ -357,44 +272,46 @@ if [ ! -z "$PS1" ];then
       fi
   fi
   
-  if [ "$TERM" = "xterm" ] && [ "$myos" = "Linux" ]; then
-      export TERM=vt100
-  fi
-  if [ "$TERM" = "linux" ]; then
-      export TERM=vt100
-  fi
-  if [ "$TERM" = "vt320" ]; then
-      export TERM=xterm
-  fi
-  if [ "$TERM" = "screen" ]; then
-      stty erase '^?'
-  fi
-  if [ "$TERM" = "screen" ] && [ "$myos" = "SunOS" ]; then
-      TERM=xterm
-  fi
+  #I think these are fixes for a problem that doesn't happen anymore
+  # if [ "$TERM" = "xterm" ] && [ "$myos" = "Linux" ]; then
+  #    export TERM=vt100
+  # fi
+  # if [ "$TERM" = "linux" ]; then
+  #     export TERM=vt100
+  # fi
+  # if [ "$TERM" = "vt320" ]; then
+  #     export TERM=xterm
+  # fi
+  # if [ "$TERM" = "screen" ]; then
+  #     stty erase '^?'
+  # fi
+  # if [ "$TERM" = "screen" ] && [ "$myos" = "SunOS" ]; then
+  #     TERM=xterm
+  # fi
 
-  export CVS_RSH=ssh
-  if [ -z "$CVSROOT" ]; then
-      if [ "$HOST" = "tora.toysmakeuspowerful.com" ] || [ "$HOST" = "tora" ]; then
-	  export CVSROOT=/home/quixote/cvsroot
-      else
-	  if [ "$HOST" = "amber.greyhelm.com" ]; then
-	      export CVSROOT=/home/digi/cvsroot
-	  else
-	      if [ "$HOST" = "invidious" ]; then
-		  export CVSROOT=/usr/local/keas/cvsroot
-	      else
-		  export CVSROOT=:ext:quixote@gw.tmup.net:/home/quixote/cvsroot
-	      fi
-	  fi
-      fi
-  fi
-  alias invcvs="export CVSROOT=:ext:eisele@insanity.ksu.ksu.edu:/net/invidious/usr/local/keas/cvsroot"
-  alias cnscvs="export CVSROOT=:ext:eisele@unix.ksu.edu:/remotefs/src/cvs/cvs"
-  alias quixcvs="export CVSROOT=:ext:quixote@gw.toysmakeuspowerful.com:/home/quixote/cvsroot"
-  alias digicvs="export CVSROOT=:ext:digi@amber.greyhelm.com:/home/digi/cvsroot"
-  alias omecvs="export CVSROOT=:ext:eisele@cvs.ome.ksu.edu:/as/data/cvsroot"
-  alias nls="/bin/ls"
+# move these to machine local... also old old old
+  # export CVS_RSH=ssh
+  # if [ -z "$CVSROOT" ]; then
+  #     if [ "$HOST" = "tora.toysmakeuspowerful.com" ] || [ "$HOST" = "tora" ]; then
+	#   export CVSROOT=/home/quixote/cvsroot
+  #     else
+	#   if [ "$HOST" = "amber.greyhelm.com" ]; then
+	#       export CVSROOT=/home/digi/cvsroot
+	#   else
+	#       if [ "$HOST" = "invidious" ]; then
+	# 	  export CVSROOT=/usr/local/keas/cvsroot
+	#       else
+	# 	  export CVSROOT=:ext:quixote@gw.tmup.net:/home/quixote/cvsroot
+	#       fi
+	#   fi
+  #     fi
+  # fi
+  # alias invcvs="export CVSROOT=:ext:eisele@insanity.ksu.ksu.edu:/net/invidious/usr/local/keas/cvsroot"
+  # alias cnscvs="export CVSROOT=:ext:eisele@unix.ksu.edu:/remotefs/src/cvs/cvs"
+  # alias quixcvs="export CVSROOT=:ext:quixote@gw.toysmakeuspowerful.com:/home/quixote/cvsroot"
+  # alias digicvs="export CVSROOT=:ext:digi@amber.greyhelm.com:/home/digi/cvsroot"
+  # alias omecvs="export CVSROOT=:ext:eisele@cvs.ome.ksu.edu:/as/data/cvsroot"
+  # alias nls="/bin/ls"
   alias emacs='emacs -title "emacs:$USER@$HOST" "$@"'
   if [ -e "/Applications/Emacs.app" ]; then
       alias emacs='/Applications/Emacs.app/Contents/MacOS/Emacs -title "emacs:$USER@$HOST" "$@"'
@@ -427,11 +344,6 @@ if [ ! -z "$PS1" ];then
   export HOSTFILE=$HOME/.hosts
   export src=/usr/local/src
   export data=/usr/local/data
-  export mpeg=/usr/local/data/mpeg
-  export sysadm=/usr/local/lic/sysadm
-  export perl5=`echo /usr/local/lib/perl5/5.*`
-  alias mikmod="mikmod -f 22050 -rp"
-export HOMEBREW_GITHUB_API_TOKEN=12ed80bc1e32406727042f9c175db966df73e724
   unset MAILCHECK
   ulimit -c 0
   if [ -f "$HOME/bin/quixbash.local" ]; then
@@ -440,30 +352,13 @@ export HOMEBREW_GITHUB_API_TOKEN=12ed80bc1e32406727042f9c175db966df73e724
   if [ -f "$HOME/bin/quixbash.local-$HOST" ]; then
      . $HOME/bin/quixbash.local-$HOST
   fi
-if [ -f "/etc/bash_completion.d/acroread.sh" ]; then
-  echo "WARNING:   /etc/bash_completion.d/acroread.sh installed.  remove it."
-fi
-  alias syn="/Applications/Synergy.app/Contents/MacOS/synergyc 129.130.48.11"
-  alias unsyn="killall synergyc ; killall synergys"
-  alias syns="/Applications/Synergy.app/Contents/MacOS/synergys --config /Users/eisele/.synergy.conf"
-  alias kn="knife"
+  if [ -f "/etc/bash_completion.d/acroread.sh" ]; then
+    echo "WARNING:   /etc/bash_completion.d/acroread.sh installed.  remove it."
+  fi
   for ai in {1..30}
   do
       alias a$ai="awk '{print \$$ai}'"
   done
-  function knhost() {
-    sed -e 's/.*://' -e 's/.*items found//'
-  }
-  function knaws() {
-    knife search node "tags:${@} OR name:${@} OR roles:${@}" -a cloud.public_hostname | knhost
-  }
-  function knssh() {
-    for i in "$@"; do 
-      for j in `knaws "$i"`; do
-        ssh $j
-      done
-    done
-  }
   function headme() {
     IFS= read -r header
     printf '%s\n' "$header"
