@@ -154,21 +154,24 @@ function git_prompt_string() {
     local git_where="$(parse_git_branch)"
     [ -n "$git_where" ] && echo "git/${git_where#(refs/heads/|tags/)}$(parse_git_state) "
 }
+function pwd_prompt_string() {
+  pwd | sed "s|^$HOME|~|"
+}
 
 GPRO=$(git_prompt_string)
 #  PROMPT_COMMAND="echo -n \": \$(date +%m%d:%H:%m) \$(git_prompt_string)\""
 
 if [ "$TERM" != "dumb" ]; then
     shopt -s checkwinsize
-    export PS1=": ${Cyan}\$(date '+%m/%d/%y %H:%M:%S')${Color_Off} ${BASEUSER}@\h ${Yellow}\w${Color_Off} ${IGreen}\$(git rev-parse --abbrev-ref HEAD 2>/dev/null)${Color_Off}\\\$; "
+    export PS1=": ${Cyan}\$(date '+%m/%d/%y %H:%M:%S')${Color_Off} ${USER}@\h ${Yellow}\w${Color_Off} ${IGreen}\$(git rev-parse --abbrev-ref HEAD 2>/dev/null)${Color_Off}\\\$; "
     export LOCALE=en_US.iso88591
 fi
 
 if [ "$TERM" = "xterm" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "xterm-256color" ];then 
     if [ -z "$STY" ]; then
-  PROMPT_COMMAND="xtitle ${USER}@${HOSTNAME} \${PWD} \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
+  PROMPT_COMMAND="xtitle ${USER}@${HOSTNAME} \$(pwd_prompt_string) \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
   #    else 
-  #	PROMPT_COMMAND="xtitle screen ${BASEUSER}@${HOSTNAME}:\${PWD} $$\#\"\`history 1|tr -d \'[:cntrl:]\'\`\""
+  #	PROMPT_COMMAND="xtitle screen ${USER}@${HOSTNAME}:\${PWD} $$\#\"\`history 1|tr -d \'[:cntrl:]\'\`\""
     fi
 fi
 
