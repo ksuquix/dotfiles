@@ -1,17 +1,12 @@
-# $Id: .bashrc,v 1.52 2014/07/23 20:53:50 quixote Exp $
-#  OS'es this is made to work reasonably ok in:
-#  Linux  (specifically redhat)
-#  Solaris (specifically 2.5.1 - 2.8)
-#  CYGWIN (CYGWIN_NT-5.1  1.3.22(0.78/3/2)) 
 
-myos=`uname -s`
-
+#myos=`uname -s`
 export PATH=${HOME}/bin:${HOME}/.local/bin:/usr/local/bin:/usr/local/sbin:$PATH:/usr/sbin:/sbin
 if [ "$UID" = "0" ]; then
   PATH=/root/bin:$PATH
 fi
 
-export MANPATH=${MANPATH}:${HOME}/man
+#I don't really do this anymore, I guess
+#export MANPATH=${MANPATH}:${HOME}/man
 
 export EDITOR=vi
 export PAGER=less
@@ -19,76 +14,20 @@ export LESS="-M -n -q -i -r"
 
 # Reset
 Color_Off='\[\e[0m\]'       # Text Reset
-
 # Regular Colors
-Black='\[\e[0;30m\]'        # Black
-Red='\[\e[0;31m\]'          # Red
-Green='\[\e[0;32m\]'        # Green
-Yellow='\[\e[0;33m\]'       # Yellow
-Blue='\[\e[0;34m\]'         # Blue
-Purple='\[\e[0;35m\]'       # Purple
-Cyan='\[\e[0;36m\]'         # Cyan
-White='\[\e[0;37m\]'        # White
-
+Black='\[\e[0;30m\]';Red='\[\e[0;31m\]';Green='\[\e[0;32m\]';Yellow='\[\e[0;33m\]';Blue='\[\e[0;34m\]';Purple='\[\e[0;35m\]';Cyan='\[\e[0;36m\]';White='\[\e[0;37m\]'
 # Bold
-BBlack='\[\e[1;30m\]'       # Black
-BRed='\[\e[1;31m\]'         # Red
-BGreen='\[\e[1;32m\]'       # Green
-BYellow='\[\e[1;33m\]'      # Yellow
-BBlue='\[\e[1;34m\]'        # Blue
-BPurple='\[\e[1;35m\]'      # Purple
-BCyan='\[\e[1;36m\]'        # Cyan
-BWhite='\[\e[1;37m\]'       # White
-
+BBlack='\[\e[1;30m\]';BRed='\[\e[1;31m\]';BGreen='\[\e[1;32m\]';BYellow='\[\e[1;33m\]';BBlue='\[\e[1;34m\]';BPurple='\[\e[1;35m\]';BCyan='\[\e[1;36m\]';BWhite='\[\e[1;37m\]'
 # Underline
-UBlack='\[\e[4;30m\]'       # Black
-URed='\[\e[4;31m\]'         # Red
-UGreen='\[\e[4;32m\]'       # Green
-UYellow='\[\e[4;33m\]'      # Yellow
-UBlue='\[\e[4;34m\]'        # Blue
-UPurple='\[\e[4;35m\]'      # Purple
-UCyan='\[\e[4;36m\]'        # Cyan
-UWhite='\[\e[4;37m\]'       # White
-
+UBlack='\[\e[4;30m\]';URed='\[\e[4;31m\]';UGreen='\[\e[4;32m\]';UYellow='\[\e[4;33m\]';UBlue='\[\e[4;34m\]';UPurple='\[\e[4;35m\]';UCyan='\[\e[4;36m\]';UWhite='\[\e[4;37m\]'
 # Background
-On_Black='\[\e[40m\]'       # Black
-On_Red='\[\e[41m\]'         # Red
-On_Green='\[\e[42m\]'       # Green
-On_Yellow='\[\e[43m\]'      # Yellow
-On_Blue='\[\e[44m\]'        # Blue
-On_Purple='\[\e[45m\]'      # Purple
-On_Cyan='\[\e[46m\]'        # Cyan
-On_White='\[\e[47m\]'       # White
-
+On_Black='\[\e[40m\]';On_Red='\[\e[41m\]';On_Green='\[\e[42m\]';On_Yellow='\[\e[43m\]';On_Blue='\[\e[44m\]';On_Purple='\[\e[45m\]';On_Cyan='\[\e[46m\]';On_White='\[\e[47m\]'
 # High Intensity
-IBlack='\[\e[0;90m\]'       # Black
-IRed='\[\e[0;91m\]'         # Red
-IGreen='\[\e[0;92m\]'       # Green
-IYellow='\[\e[0;93m\]'      # Yellow
-IBlue='\[\e[0;94m\]'        # Blue
-IPurple='\[\e[0;95m\]'      # Purple
-ICyan='\[\e[0;96m\]'        # Cyan
-IWhite='\[\e[0;97m\]'       # White
-
+IBlack='\[\e[0;90m\]';IRed='\[\e[0;91m\]';IGreen='\[\e[0;92m\]';IYellow='\[\e[0;93m\]';IBlue='\[\e[0;94m\]';IPurple='\[\e[0;95m\]';ICyan='\[\e[0;96m\]';IWhite='\[\e[0;97m\]'
 # Bold High Intensity
-BIBlack='\[\e[1;90m\]'      # Black
-BIRed='\[\e[1;91m\]'        # Red
-BIGreen='\[\e[1;92m\]'      # Green
-BIYellow='\[\e[1;93m\]'     # Yellow
-BIBlue='\[\e[1;94m\]'       # Blue
-BIPurple='\[\e[1;95m\]'     # Purple
-BICyan='\[\e[1;96m\]'       # Cyan
-BIWhite='\[\e[1;97m\]'      # White
-
+BIBlack='\[\e[1;90m\]';BIRed='\[\e[1;91m\]';BIGreen='\[\e[1;92m\]';BIYellow='\[\e[1;93m\]';BIBlue='\[\e[1;94m\]';BIPurple='\[\e[1;95m\]';BICyan='\[\e[1;96m\]';BIWhite='\[\e[1;97m\]'
 # High Intensity backgrounds
-On_IBlack='\[\e[0;100m\]'   # Black
-On_IRed='\[\e[0;101m\]'     # Red
-On_IGreen='\[\e[0;102m\]'   # Green
-On_IYellow='\[\e[0;103m\]'  # Yellow
-On_IBlue='\[\e[0;104m\]'    # Blue
-On_IPurple='\[\e[0;105m\]'  # Purple
-On_ICyan='\[\e[0;106m\]'    # Cyan
-On_IWhite='\[\e[0;107m\]'   # White
+On_IBlack='\[\e[0;100m\]';On_IRed='\[\e[0;101m\]';On_IGreen='\[\e[0;102m\]';On_IYellow='\[\e[0;103m\]';On_IBlue='\[\e[0;104m\]';On_IPurple='\[\e[0;105m\]';On_ICyan='\[\e[0;106m\]';On_IWhite='\[\e[0;107m\]'
 
 if [ ! -z "$SSH_CLIENT" ]; then
   export REMOTEHOST=${SSH_CLIENT%% *}
@@ -119,74 +58,6 @@ function session-test {
 
 # Things set for interactive shells
 if [ ! -z "$PS1" ];then
-  #set prompt="`uname -n`% "
-  #set prompt = '%m/%~>'
-  if [ "$LOGNAME" != "$USER" ]; then
-    if [ "$LOGNAME" = "root" ]; then 
-      LOGNAME="$USER"
-      BASEUSER="$USER"
-    else
-      if [ -z "$LOGNAME" ]; then 
-         LOGNAME="$USER"
-         BASEUSER="$USER"
-      else 
-        if [ -z "$USER" ]; then
-           USER="$LOGNAME"
-          BASEUSER="$USER"
-        else
-           BASEUSER="$LOGNAME LOGNAME not right?"
-        fi
-      fi
-    fi
-  else
-    BASEUSER=$LOGNAME
-  fi
-  if [ -z "$HOST" ]; then
-    export HOST=`hostname`
-  fi
-  if [ -z "$HOSTNAME" ]; then
-    export HOSTNAME=`hostname`
-  fi
-
-  TTY=`tty | cut -d/ -f3-`
-  case "${BASEUSER}" in
-    eisele)
-       BASESHORT="eis" ;;
-    quixote)
-       BASESHORT="quix" ;;
-    aikido)
-       BASESHORT="aik" ;;
-    iab)
-       BASESHORT="iab" ;;
-    natsune)
-       BASESHORT="nat" ;;
-    odc)
-       BASESHORT="odc" ;;
-    quixcraft)
-       BASESHORT="qcraft" ;;
-    smash)
-       BASESHORT="smash" ;;
-    spin)
-       BASESHORT="spin" ;;
-    tengaicon)
-       BASESHORT="con" ;;
-    toys)
-       BASESHORT="toys" ;;
-    *)
-       BASESHORT="${BASEUSER}"
-  esac
-  case "${HOSTNAME}" in
-    insanity)
-       HOSTSHORT="ins" ;;
-    ubuntu-dev)
-       HOSTSHORT="dev" ;;
-    tora)
-       HOSTSHORT="tora" ;;
-    *)
-       HOSTSHORT="${HOSTNAME}"
-  esac
-#aikido,eisele,iab,natsune,odc,quixcraft,smash,spin,tengaicon,toys
-
 
   function wordfind() {
       egrep "$*" /usr/share/dict/words
@@ -266,7 +137,7 @@ if [ ! -z "$PS1" ];then
 
   if [ "$TERM" = "xterm" ] || [ "$TERM" = "vt100" ] || [ "$TERM" = "xterm-256color" ];then 
       if [ -z "$STY" ]; then
-	  PROMPT_COMMAND="xtitle ${BASESHORT}@${HOSTSHORT} \${PWD} \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
+	  PROMPT_COMMAND="xtitle ${USER}@${HOSTNAME} \${PWD} \$(git_prompt_string)last:\"\`history 1|tr -d \'[:cntrl:]\'|sed -e 's/^ *[0-9]* *//'\`\""
 	  #    else 
 	  #	PROMPT_COMMAND="xtitle screen ${BASEUSER}@${HOSTNAME}:\${PWD} $$\#\"\`history 1|tr -d \'[:cntrl:]\'\`\""
       fi
